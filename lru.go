@@ -20,7 +20,7 @@ limitations under the License.
  */
 
 // Package lru implements an LRU cache.
-package lru
+package generic_lru
 
 import "container/list"
 

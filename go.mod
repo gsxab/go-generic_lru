@@ -1,3 +1,3 @@
-module lru_cache
+module generic_lru
 
 go 1.18
