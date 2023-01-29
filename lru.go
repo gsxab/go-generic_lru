@@ -107,6 +107,19 @@ func (c *Cache[Key, Value]) RemoveOldest() (key Key, value Value, ok bool) {
 	return
 }
 
+// RemoveOldest gets the oldest item from the cache.
+func (c *Cache[Key, Value]) GetOldest() (key Key, value Value, ok bool) {
+	if c.cache == nil {
+		return
+	}
+	ele := c.ll.Back()
+	if ele != nil {
+		kv := ele.Value.(*entry[Key, Value])
+		return kv.key, kv.value, true
+	}
+	return
+}
+
 func (c *Cache[Key, Value]) removeElement(e *list.Element) (key Key, value Value) {
 	c.ll.Remove(e)
 	kv := e.Value.(*entry[Key, Value])
