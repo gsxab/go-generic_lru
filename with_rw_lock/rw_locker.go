@@ -6,8 +6,6 @@ type RWLocker interface {
 	RLock()
 	TryRLock() bool
 	RUnlock()
-	Lock()
-	TryLock() bool
-	Unlock()
+	sync.Locker
 	RLocker() sync.Locker
 }
