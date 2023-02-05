@@ -7,13 +7,13 @@ import (
 )
 
 type WithLock[Key comparable, Value any, C generic_lru.Cache[Key, Value]] struct {
-	lock  sync.Locker
+	lock  RWLocker
 	Cache C
 }
 
-func New[Key comparable, Value any, C generic_lru.Cache[Key, Value]](c C, lock sync.Locker) *WithLock[Key, Value, C] {
+func New[Key comparable, Value any, C generic_lru.Cache[Key, Value]](c C, lock RWLocker) *WithLock[Key, Value, C] {
 	if lock == nil || reflect.ValueOf(lock).IsNil() {
-		lock = &sync.Mutex{}
+		lock = &sync.RWMutex{}
 	}
 	return &WithLock[Key, Value, C]{
 		lock:  lock,
@@ -28,8 +28,8 @@ func (w *WithLock[Key, Value, C]) Add(key Key, value Value) {
 }
 
 func (w *WithLock[Key, Value, C]) Get(key Key) (value Value, ok bool) {
-	w.lock.Lock()
-	defer w.lock.Unlock()
+	w.lock.RLock()
+	defer w.lock.RUnlock()
 	return w.Cache.Get(key)
 }
 
@@ -46,14 +46,14 @@ func (w *WithLock[Key, Value, C]) RemoveOldest() (key Key, value Value, ok bool)
 }
 
 func (w *WithLock[Key, Value, C]) GetOldest() (key Key, value Value, ok bool) {
-	w.lock.Lock()
-	defer w.lock.Unlock()
+	w.lock.RLock()
+	defer w.lock.RUnlock()
 	return w.Cache.GetOldest()
 }
 
 func (w *WithLock[Key, Value, C]) ApplyRO(f func(generic_lru.Cache[Key, Value])) {
-	w.lock.Lock()
-	defer w.lock.Unlock()
+	w.lock.RLock()
+	defer w.lock.RUnlock()
 	w.Cache.ApplyRO(f)
 }
 
@@ -64,8 +64,8 @@ func (w *WithLock[Key, Value, C]) ApplyRW(f func(generic_lru.Cache[Key, Value]))
 }
 
 func (w *WithLock[Key, Value, C]) Len() int {
-	w.lock.Lock()
-	defer w.lock.Unlock()
+	w.lock.RLock()
+	defer w.lock.RUnlock()
 	return w.Cache.Len()
 }
 
