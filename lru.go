@@ -24,8 +24,8 @@ package generic_lru
 
 import "container/list"
 
-// Cache is an LRU cache. It is not safe for concurrent access.
-type Cache[Key comparable, Value any] struct {
+// LRU is an LRU cache. It is not safe for concurrent access.
+type LRU[Key comparable, Value any] struct {
 	// MaxEntries is the maximum number of cache entries before
 	// an item is evicted. Zero means no limit.
 	MaxEntries int
@@ -43,11 +43,11 @@ type entry[Key comparable, Value any] struct {
 	value Value
 }
 
-// New creates a new Cache.
+// New creates a new LRU.
 // If maxEntries is zero, the cache has no limit and it's assumed
 // that eviction is done by the caller.
-func New[Key comparable, Value any](maxEntries int) *Cache[Key, Value] {
-	return &Cache[Key, Value]{
+func New[Key comparable, Value any](maxEntries int) *LRU[Key, Value] {
+	return &LRU[Key, Value]{
 		MaxEntries: maxEntries,
 		ll:         list.New(),
 		cache:      make(map[interface{}]*list.Element),
@@ -55,7 +55,7 @@ func New[Key comparable, Value any](maxEntries int) *Cache[Key, Value] {
 }
 
 // Add adds a value to the cache.
-func (c *Cache[Key, Value]) Add(key Key, value Value) {
+func (c *LRU[Key, Value]) Add(key Key, value Value) {
 	if c.cache == nil {
 		c.cache = make(map[interface{}]*list.Element)
 		c.ll = list.New()
@@ -73,7 +73,7 @@ func (c *Cache[Key, Value]) Add(key Key, value Value) {
 }
 
 // Get looks up a key's value from the cache.
-func (c *Cache[Key, Value]) Get(key Key) (value Value, ok bool) {
+func (c *LRU[Key, Value]) Get(key Key) (value Value, ok bool) {
 	if c.cache == nil {
 		return
 	}
@@ -85,17 +85,19 @@ func (c *Cache[Key, Value]) Get(key Key) (value Value, ok bool) {
 }
 
 // Remove removes the provided key from the cache.
-func (c *Cache[Key, Value]) Remove(key Key) {
+func (c *LRU[Key, Value]) Remove(key Key) (value Value, ok bool) {
 	if c.cache == nil {
 		return
 	}
 	if ele, hit := c.cache[key]; hit {
-		c.removeElement(ele)
+		_, value = c.removeElement(ele)
+		return value, true
 	}
+	return
 }
 
 // RemoveOldest removes the oldest item from the cache.
-func (c *Cache[Key, Value]) RemoveOldest() (key Key, value Value, ok bool) {
+func (c *LRU[Key, Value]) RemoveOldest() (key Key, value Value, ok bool) {
 	if c.cache == nil {
 		return
 	}
@@ -108,7 +110,7 @@ func (c *Cache[Key, Value]) RemoveOldest() (key Key, value Value, ok bool) {
 }
 
 // RemoveOldest gets the oldest item from the cache.
-func (c *Cache[Key, Value]) GetOldest() (key Key, value Value, ok bool) {
+func (c *LRU[Key, Value]) GetOldest() (key Key, value Value, ok bool) {
 	if c.cache == nil {
 		return
 	}
@@ -120,7 +122,7 @@ func (c *Cache[Key, Value]) GetOldest() (key Key, value Value, ok bool) {
 	return
 }
 
-func (c *Cache[Key, Value]) removeElement(e *list.Element) (key Key, value Value) {
+func (c *LRU[Key, Value]) removeElement(e *list.Element) (key Key, value Value) {
 	c.ll.Remove(e)
 	kv := e.Value.(*entry[Key, Value])
 	delete(c.cache, kv.key)
@@ -130,8 +132,16 @@ func (c *Cache[Key, Value]) removeElement(e *list.Element) (key Key, value Value
 	return kv.key, kv.value
 }
 
+func (c *LRU[Key, Value]) ApplyRO(f func(Cache[Key, Value])) {
+	f(c)
+}
+
+func (c *LRU[Key, Value]) ApplyRW(f func(Cache[Key, Value])) {
+	f(c)
+}
+
 // Len returns the number of items in the cache.
-func (c *Cache[Key, Value]) Len() int {
+func (c *LRU[Key, Value]) Len() int {
 	if c.cache == nil {
 		return 0
 	}
@@ -139,7 +149,7 @@ func (c *Cache[Key, Value]) Len() int {
 }
 
 // Clear purges all stored items from the cache.
-func (c *Cache[Key, Value]) Clear() {
+func (c *LRU[Key, Value]) Clear() {
 	if c.OnEvicted != nil {
 		for _, e := range c.cache {
 			kv := e.Value.(*entry[Key, Value])
