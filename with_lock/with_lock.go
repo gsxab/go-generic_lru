@@ -1,10 +1,23 @@
-package generic_lru
+package with_lock
 
-import "sync"
+import (
+	"github.com/gsxab/go-generic_lru"
+	"sync"
+)
 
-type WithLock[Key comparable, Value any, C Cache[Key, Value]] struct {
-	lock *sync.RWMutex
-	Cache[Key, Value]
+type WithLock[Key comparable, Value any, C generic_lru.Cache[Key, Value]] struct {
+	lock  *sync.RWMutex
+	Cache C
+}
+
+func New[Key comparable, Value any, C generic_lru.Cache[Key, Value]](c C, lock *sync.RWMutex) *WithLock[Key, Value, C] {
+	if lock == nil {
+		lock = &sync.RWMutex{}
+	}
+	return &WithLock[Key, Value, C]{
+		lock:  lock,
+		Cache: c,
+	}
 }
 
 func (w *WithLock[Key, Value, C]) Add(key Key, value Value) {
@@ -37,13 +50,13 @@ func (w *WithLock[Key, Value, C]) GetOldest() (key Key, value Value, ok bool) {
 	return w.Cache.GetOldest()
 }
 
-func (w *WithLock[Key, Value, C]) ApplyRO(f func(Cache[Key, Value])) {
+func (w *WithLock[Key, Value, C]) ApplyRO(f func(generic_lru.Cache[Key, Value])) {
 	w.lock.RLock()
 	defer w.lock.RUnlock()
 	w.Cache.ApplyRO(f)
 }
 
-func (w *WithLock[Key, Value, C]) ApplyRW(f func(Cache[Key, Value])) {
+func (w *WithLock[Key, Value, C]) ApplyRW(f func(generic_lru.Cache[Key, Value])) {
 	w.lock.Lock()
 	defer w.lock.Unlock()
 	w.Cache.ApplyRW(f)

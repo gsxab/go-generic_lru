@@ -20,9 +20,12 @@ limitations under the License.
  */
 
 // Package lru implements an LRU cache.
-package generic_lru
+package lru
 
-import "container/list"
+import (
+	"container/list"
+	"github.com/gsxab/go-generic_lru"
+)
 
 // LRU is an LRU cache. It is not safe for concurrent access.
 type LRU[Key comparable, Value any] struct {
@@ -132,11 +135,11 @@ func (c *LRU[Key, Value]) removeElement(e *list.Element) (key Key, value Value) 
 	return kv.key, kv.value
 }
 
-func (c *LRU[Key, Value]) ApplyRO(f func(Cache[Key, Value])) {
+func (c *LRU[Key, Value]) ApplyRO(f func(generic_lru.Cache[Key, Value])) {
 	f(c)
 }
 
-func (c *LRU[Key, Value]) ApplyRW(f func(Cache[Key, Value])) {
+func (c *LRU[Key, Value]) ApplyRW(f func(generic_lru.Cache[Key, Value])) {
 	f(c)
 }
 
