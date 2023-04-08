@@ -57,6 +57,18 @@ func New[Key comparable, Value any](maxEntries int) *LRU[Key, Value] {
 	}
 }
 
+// New creates a new LRU with OnEvicted.
+// If maxEntries is zero, the cache has no limit and it's assumed
+// that eviction is done by the caller.
+func NewWithOnEvicted[Key comparable, Value any](maxEntries int, onEvicted func(Key, Value)) *LRU[Key, Value] {
+	return &LRU[Key, Value]{
+		MaxEntries: maxEntries,
+		OnEvicted:  onEvicted,
+		ll:         list.New(),
+		cache:      make(map[interface{}]*list.Element),
+	}
+}
+
 // Add adds a value to the cache.
 func (c *LRU[Key, Value]) Add(key Key, value Value) {
 	if c.cache == nil {
