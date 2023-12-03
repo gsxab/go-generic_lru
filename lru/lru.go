@@ -24,6 +24,7 @@ package lru
 
 import (
 	"container/list"
+
 	"github.com/gsxab/go-generic_lru"
 )
 
@@ -161,6 +162,11 @@ func (c *LRU[Key, Value]) Len() int {
 		return 0
 	}
 	return c.ll.Len()
+}
+
+// Container returns the underlying container.
+func (c *LRU[Key, Value]) Container() (interface{}, error) {
+	return c.ll, nil
 }
 
 // Clear purges all stored items from the cache.

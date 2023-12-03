@@ -1,9 +1,11 @@
 package with_rw_lock
 
 import (
-	"github.com/gsxab/go-generic_lru"
+	"errors"
 	"reflect"
 	"sync"
+
+	"github.com/gsxab/go-generic_lru"
 )
 
 type WithLock[Key comparable, Value any, C generic_lru.Cache[Key, Value]] struct {
@@ -67,6 +69,10 @@ func (w *WithLock[Key, Value, C]) Len() int {
 	w.lock.Lock()
 	defer w.lock.Unlock()
 	return w.Cache.Len()
+}
+
+func (w *WithLock[Key, Value, C]) Container() (interface{}, error) {
+	return nil, errors.New("cannot get underlying container without breaking lock protocol")
 }
 
 func (w *WithLock[Key, Value, C]) Clear() {

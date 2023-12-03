@@ -9,5 +9,6 @@ type Cache[Key comparable, Value any] interface {
 	ApplyRO(f func(Cache[Key, Value]))
 	ApplyRW(f func(Cache[Key, Value]))
 	Len() int
+	Container() (interface{}, error)
 	Clear()
 }
