@@ -47,6 +47,11 @@ type entry[Key comparable, Value any] struct {
 	value Value
 }
 
+// Value allows to access the value by iterating the underlying container.
+func (e *entry[K, V]) Value() V {
+	return e.value
+}
+
 // New creates a new LRU.
 // If maxEntries is zero, the cache has no limit and it's assumed
 // that eviction is done by the caller.
