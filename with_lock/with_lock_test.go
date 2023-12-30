@@ -13,13 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+/*
+ * Modification copyright 2023 gsxab.
+ *
+ * For changes against the original version, see git history.
+ */
 
 package with_rw_lock
 
 import (
 	"fmt"
-	c "github.com/gsxab/go-generic_lru/lru"
 	"testing"
+
+	c "github.com/gsxab/go-generic_lru/lru"
 )
 
 type simpleStruct struct {
