@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package with_rw_lock
+package with_lock
 
 import (
 	"errors"

@@ -19,7 +19,7 @@ limitations under the License.
  * For changes against the original version, see git history.
  */
 
-package with_rw_lock
+package with_lock
 
 import (
 	"fmt"
